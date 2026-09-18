@@ -1,0 +1,51 @@
+services:
+
+  db:
+    image: postgres:17
+    container_name: mini-cricheroes-db
+
+    environment:
+      POSTGRES_DB: mini_cricheroes
+      POSTGRES_USER: cricket_user
+      POSTGRES_PASSWORD: cricket_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  web:
+    build: .
+
+    container_name: mini-cricheroes-web
+
+    command: >
+      sh -c
+      "python manage.py migrate &&
+       python manage.py runserver 0.0.0.0:8000"
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      SECRET_KEY: django-docker-development-key
+      DEBUG: "True"
+      ALLOWED_HOSTS: 127.0.0.1,localhost
+      DB_ENGINE: postgresql
+      DB_NAME: mini_cricheroes
+      DB_USER: cricket_user
+      DB_PASSWORD: cricket_password
+      DB_HOST: db
+      DB_PORT: "5432"
+
+    depends_on:
+      - db
+
+
+volumes:
+  postgres_data:
